@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun MemberFormDialog(
+fun MemberAlertDialog(
     onCancel: () -> Unit = {},
     onConfirm: () -> Unit = {}
 ) {

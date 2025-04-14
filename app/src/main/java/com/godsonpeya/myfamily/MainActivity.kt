@@ -15,7 +15,9 @@ import androidx.navigation.compose.rememberNavController
 import com.godsonpeya.myfamily.navigation.AppNavHost
 import com.godsonpeya.myfamily.ui.screen.HomeScreen
 import com.godsonpeya.myfamily.ui.theme.MyFamilyTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

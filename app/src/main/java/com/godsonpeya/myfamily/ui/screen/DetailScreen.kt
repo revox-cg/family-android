@@ -17,6 +17,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,17 +28,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.godsonpeya.myfamily.R
+import com.godsonpeya.myfamily.data.remote.model.MembersItemRq
+import com.godsonpeya.myfamily.ui.components.MemberAlertDialog
 import com.godsonpeya.myfamily.ui.components.MemberFormDialog
+import com.godsonpeya.myfamily.ui.components.NoDataFound
+import com.godsonpeya.myfamily.ui.viewmodel.MemberViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(navHostController: NavHostController, memberId: String) {
+fun DetailScreen(
+    navHostController: NavHostController,
+    memberId: String,
+    viewModel: MemberViewModel = hiltViewModel()
+) {
 
     var openEditDialog by remember { mutableStateOf(false) }
     var openAlertDialog by remember { mutableStateOf(false) }
+
+    val member by viewModel.member.collectAsState()
+
+    LaunchedEffect(key1 = memberId) {
+        viewModel.getMember(memberId)
+    }
+
 
     Scaffold(
         topBar = {
@@ -47,7 +65,10 @@ fun DetailScreen(navHostController: NavHostController, memberId: String) {
                     IconButton(onClick = {
                         navHostController.popBackStack()
                     }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 actions = {
@@ -65,44 +86,57 @@ fun DetailScreen(navHostController: NavHostController, memberId: String) {
             )
         }
     ) { padding ->
+        if (member == null) {
+            NoDataFound(padding)
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+                Image(
+                    painter = painterResource(id = R.drawable.profile),
+                    contentDescription = "Profile"
+                )
 
-            Image(
-                painter = painterResource(id = R.drawable.profile),
-                contentDescription = "Profile"
-            )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "John Alikoko $memberId")
+                Text(text = "${member?.firstName} ${member?.lastName}")
+            }
         }
     }
 
     if (openEditDialog) {
         MemberFormDialog(
-            "firstname", "lastname",
+            member = member,
             action = "Modifier",
             onCancel = {
-                openAlertDialog = !openAlertDialog
+                openEditDialog = !openEditDialog
             },
-            onConfirm = {
-                openAlertDialog = !openAlertDialog
+            onConfirm = { firstname, lastname ->
+                viewModel.updateMember(
+                    id = memberId,
+                    member = MembersItemRq(
+                        id = memberId,
+                        firstName = firstname,
+                        lastName = lastname
+                    )
+                )
+                viewModel.getMember(id = memberId)
+                openEditDialog = !openEditDialog
             })
     }
 
     if (openAlertDialog) {
-        MemberFormDialog(
+        MemberAlertDialog(
             onCancel = {
                 openAlertDialog = !openAlertDialog
             },
             onConfirm = {
-                openAlertDialog = !openAlertDialog
+                viewModel.deleteMember(id = memberId)
+                navHostController.popBackStack()
             })
     }
 

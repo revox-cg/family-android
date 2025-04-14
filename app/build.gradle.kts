@@ -4,11 +4,13 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.room)
 }
 
 android {
     namespace = "com.godsonpeya.myfamily"
     compileSdk = 35
+
 
     defaultConfig {
         applicationId = "com.godsonpeya.myfamily"
@@ -29,6 +31,9 @@ android {
             )
         }
     }
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -44,12 +49,14 @@ android {
 dependencies {
 
     implementation (libs.retrofit)
-    implementation (libs.gson)
+    implementation (libs.converter.gson)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
